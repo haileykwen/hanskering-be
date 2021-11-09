@@ -1,4 +1,4 @@
-name: calculator-ci
+name: Deploy to heroku
 
 on:
   push:
