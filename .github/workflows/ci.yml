@@ -24,15 +24,6 @@ jobs:
     - name: npm install
       run: |
         npm install
-    - name: npm test
-      run: |
-        npm test 
-      env:
-        CI: true
-      
-    - name: npm build
-      run: |
-        yarn run build --if-present
     
     - name: Add remote origin
       run: |
