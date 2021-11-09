@@ -2,7 +2,7 @@ name: Deploy Container to Heroku
 on: 
   push:
     branches:
-      - main
+      - staging
 jobs:
   Deployer:
     runs-on: ubuntu-latest
