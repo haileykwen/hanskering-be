@@ -1,50 +1,31 @@
-name: Node.js CI
+name: ci-dev
+
 on:
-  push:
+  pull_request:
     branches:
       - staging
+
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-        strategy:
-            matrix:
-                node-version: [12.x]
-            
-        steps:
-            - name: Checkout source code
-              uses: actions/checkout@v2
-            
-            - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v1
-              with:
-                node-version: ${{ matrix.node-version }}
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                # npm cache files are stored in `~/.npm` on Linux/macOS
-                path: ~/.npm 
-                key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-                restore-keys: |
-                    ${{ runner.OS }}-node-
-                    ${{ runner.OS }}-
-            - name: Install dependencies
-              run: npm install
-            # - name: Unit tests
-            #   run: npm run test
-            - name: Build app if present
-              run: npm run build --if-present
+    strategy:
+      matrix:
+        node-version: [12.x]
 
-    deploy:
-        needs: build
-        runs-on: ubuntu-latest
-
-        steps:
-            - uses: actions/checkout@v2
-            - name: Deploy to Heroku
-              uses: akhileshns/heroku-deploy@v3.6.8
-              with:
-                heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-                heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
-                heroku_email: harlifauzi26@gmail.com
-                branch: master
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install dependencies
+      run: npm ci
+    - name: Build project
+      run: npm build --if-present
+    - name: Run test
+      run: npm test --if-present
+    - name: Add remote origin
+      run: git remote add heroku https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/${{ secrets.HEROKU_APP_DEV }}.git
+    - name: Deploy to Heroku
+      run: git push heroku origin/develop:refs/heads/master
