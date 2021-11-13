@@ -16,11 +16,13 @@ app.use((req, res, next) => {
     next();
 });
 
-const cmsAuthRoute  = require('./routes/cmsAuthRoute');
-const cmsAppRoute   = require('./routes/cmsAppRoute'); 
+const cmsAuthRoute      = require('./routes/cmsAuthRoute');
+const cmsAppRoute       = require('./routes/cmsAppRoute'); 
+const apiProductRoute   = require("./routes/apiProductRoute");
 
 app.use('/cms/auth', cmsAuthRoute);
 app.use('/cms/app', requireAuth, cmsAppRoute);
+app.use('/api/product', requireAuth, apiProductRoute);
 app.get('/*', (req, res) => res.redirect('/cms/app/dashboard'));
 
 app.listen(port, () => {
