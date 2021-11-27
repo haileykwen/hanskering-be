@@ -20,6 +20,7 @@ const get_product = (req, res) => {
             });
             if (success) {
                 pageLength = Math.ceil(success.length/resultsPerPage);
+                allDataLength = success.length;
 
                 if (Number(req.query.page) > pageLength) {
                     res.redirect('/cms/app/product?page=' + encodeURIComponent(pageLength))
@@ -36,13 +37,13 @@ const get_product = (req, res) => {
                             });
                         } else {
                             res.render('product', {
-                                data_length: success.length,
-                                page_length: Math.ceil(success.length / resultsPerPage),
+                                data_length: allDataLength,
+                                page_length: pageLength,
                                 data: success,
                                 start_limit: startingLimit + 1,
                                 end_limit: startingLimit + success.length,
                                 page: req.query.page,
-                                next: req.query.page < Math.ceil(success.length / resultsPerPage) ? true : false,
+                                next: req.query.page < pageLength ? true : false,
                                 previous: req.query.page > 1 ? true : false
                             });
                         }
