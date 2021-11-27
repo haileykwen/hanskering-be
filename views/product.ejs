@@ -83,15 +83,15 @@
                                     <input id="page-input" type="number" class="form-control form-control-sm rounded-0 col-sm-2" placeholder=<%= page %>>
 
                                     <% if(previous === false) { %> 
-                                        <button disabled type="button" class="col-sm-4 rounded-0 btn btn-sm btn-primary">Sebelumnya</button> 
+                                        <button id="button-previous" disabled type="button" class="col-sm-4 rounded-0 btn btn-sm btn-primary">Sebelumnya</button> 
                                     <% } else { %>
-                                        <button type="button" class="col-sm-4 rounded-0 btn btn-sm btn-primary">Sebelumnya</button> 
+                                        <button id="button-previous" type="button" class="col-sm-4 rounded-0 btn btn-sm btn-primary">Sebelumnya</button> 
                                     <% } %>
 
                                     <% if(next === false) { %> 
-                                        <button disabled type="button" class="col-sm-4 rounded-0 btn btn-sm btn-primary">Selanjutnya</button> 
+                                        <button id="button-next" disabled type="button" class="col-sm-4 rounded-0 btn btn-sm btn-primary">Selanjutnya</button> 
                                     <% } else { %>
-                                        <button type="button" class="col-sm-4 rounded-0 btn btn-sm btn-primary">Selanjutnya</button> 
+                                        <button id="button-next" type="button" class="col-sm-4 rounded-0 btn btn-sm btn-primary">Selanjutnya</button> 
                                     <% } %>
                                   </div>
                             </div>
