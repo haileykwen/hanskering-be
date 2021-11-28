@@ -4,6 +4,10 @@ const get_dashboard = (req, res) => {
     res.render('dashboard');
 }
 
+const get_createProduct = (req, res) => {
+    res.render('createProduct');
+}
+
 const get_product = (req, res) => {
     if (!req.query.page) {
         res.redirect('/cms/app/product?page=1');
@@ -54,12 +58,33 @@ const get_product = (req, res) => {
     }
 }
 
-const get_createProduct = (req, res) => {
-    res.render('createProduct');
+const get_viewProduct = (req, res) => {
+    if (req.query.id) {
+        const sql = "SELECT * FROM barang WHERE kode_barang = ?";
+        db.query(sql, req.query.id, (error, success) => {
+            if (error) {
+                res.status(500).json({
+                    status: 500,
+                    message: "Server Error",
+                    error
+                });
+            }
+            if (success) {
+                let data = success[0];
+                data.size = JSON.parse(data.size);
+                res.render('viewProduct', {
+                    data
+                });
+            }
+        });
+    } else {
+        res.redirect('/cms/app/product?page=1');
+    }
 }
 
 module.exports = {
     get_dashboard,
     get_product,
-    get_createProduct
+    get_createProduct,
+    get_viewProduct
 }

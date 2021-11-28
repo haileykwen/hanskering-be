@@ -67,14 +67,26 @@
                                             <th>Nama Produk</th>
                                             <th>Brand</th>
                                             <th>Harga</th>
+                                            <th>Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <% data.forEach(entry => { %>
-                                            <tr>
-                                                <td><%= entry.nama_barang %></td>
+                                            <tr id=<%= entry.kode_barang %>>
+                                                <td onclick="clickBarang(event)"><%= entry.nama_barang %></td>
                                                 <td><%= entry.brand %></td>
                                                 <td><%= entry.harga %></td>
+                                                <td>
+                                                    <button class="d-sm-inline-block btn btn-sm btn-info shadow-sm mb-1">
+                                                        Edit
+                                                    </button>
+                                                    <button class="d-sm-inline-block btn btn-sm btn-success shadow-sm mb-1">
+                                                        Restock
+                                                    </button>
+                                                    <button class="d-sm-inline-block btn btn-sm btn-danger shadow-sm mb-1">
+                                                        Hapus
+                                                    </button>
+                                                </td>
                                             </tr>
                                         <% }) %>
                                     </tbody>
