@@ -1,0 +1,9 @@
+#foto_produk{
+    width: 300px;
+}
+
+@media screen and (max-width: 400px){
+    #foto_produk{
+        width: 100%;
+    }
+}

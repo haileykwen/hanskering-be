@@ -1,7 +1,7 @@
 const btnCreate     = document.getElementById('btn-create');
 const pageInput     = document.getElementById('page-input');
-const btnNext     = document.getElementById('button-next');
-const btnPrevious     = document.getElementById('button-previous');
+const btnNext       = document.getElementById('button-next');
+const btnPrevious   = document.getElementById('button-previous');
 
 btnCreate.addEventListener('click', () => {
     window.location.href = '/cms/app/product/create';
@@ -29,3 +29,10 @@ btnPrevious.addEventListener('click', () => {
     const currentPage = params.page;
     window.location.href = `${window.location.origin}/cms/app/product?page=${currentPage-1}`;
 });
+
+function clickBarang(e){
+    e = e || window.event;
+    var target = e.target || e.srcElement;
+    var id = target.parentNode.id
+    window.location.href = `${window.location.origin}/cms/app/product/view?id=${id}`;
+}
