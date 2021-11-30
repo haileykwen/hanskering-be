@@ -82,9 +82,34 @@ const get_viewProduct = (req, res) => {
     }
 }
 
+const get_updateProduct = (req, res) => {
+    if (req.query.id) {
+        const sql = "SELECT * FROM barang WHERE kode_barang = ?";
+        db.query(sql, req.query.id, (error, success) => {
+            if (error) {
+                res.status(500).json({
+                    status: 500,
+                    message: "Server Error",
+                    error
+                });
+            }
+            if (success) {
+                let data = success[0];
+                data.size = JSON.parse(data.size);
+                res.render('updateProduct', {
+                    data
+                });
+            }
+        });
+    } else {
+        res.redirect('/cms/app/product?page=1');
+    }
+}
+
 module.exports = {
     get_dashboard,
     get_product,
     get_createProduct,
-    get_viewProduct
+    get_viewProduct,
+    get_updateProduct
 }

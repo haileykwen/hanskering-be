@@ -73,11 +73,11 @@
                                     <tbody>
                                         <% data.forEach(entry => { %>
                                             <tr id=<%= entry.kode_barang %>>
-                                                <td onclick="clickBarang(event)"><%= entry.nama_barang %></td>
+                                                <td style="cursor: pointer;" onclick="clickBarang(event)"><%= entry.nama_barang %></td>
                                                 <td><%= entry.brand %></td>
                                                 <td><%= entry.harga %></td>
                                                 <td>
-                                                    <button class="d-sm-inline-block btn btn-sm btn-info shadow-sm mb-1">
+                                                    <button class="d-sm-inline-block btn btn-sm btn-info shadow-sm mb-1" onclick="clickEdit(event)">
                                                         Edit
                                                     </button>
                                                     <button class="d-sm-inline-block btn btn-sm btn-success shadow-sm mb-1">
