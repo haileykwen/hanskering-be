@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Admin hanskering | Update Produk</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="/sbadmin/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="/sbadmin/css/sb-admin-2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/updateProduct.css">
+
+</head>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <%- include('sidebar.ejs') %>
+        <!-- End of Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <%- include('topbar.ejs') %>
+                <!-- End of Topbar -->
+
+                <!-- Begin Page Content -->
+                <div class="container-fluid" id="form-wrapper">
+
+                    <!-- Page Heading -->
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                        <h1 class="h3 mb-0 text-gray-800">Update Produk</h1>
+                    </div>
+                    
+                    <div id="brand-part" class="mb-3">
+                        <label class="form-label">Brand</label>
+                        <div class="form-check">
+                            <% if (data.brand === "Converse" ) { %>
+                                <input class="form-check-input" checked type="radio" name="brand" id="converse" value="Converse">
+                            <% } else { %>
+                                <input class="form-check-input" type="radio" name="brand" id="converse" value="Converse">
+                            <% } %>
+                            <label class="form-check-label" for="converse">
+                                Converse
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <% if (data.brand === "Vans" ) { %>
+                                <input  class="form-check-input" checked type="radio" name="brand" id="vans" value="Vans">
+                            <% } else { %>
+                                <input  class="form-check-input" type="radio" name="brand" id="vans" value="Vans">
+                            <% } %>
+                            <label class="form-check-label" for="vans">
+                                Vans
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nama-barang" class="form-label">Nama Barang</label>
+                        <input type="text" class="form-control" id="nama-barang" value="<%= data.nama_barang %>">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="upload" class="form-label">Picture</label><br>
+                        <img id="foto_produk" src=<%= data.foto %> alt="foto_produk">
+                        <button type="button" class="btn btn-primary btn-ganti-foto">Ganti Foto</button>
+                        <img style="display: none;" id="new-pic-preview" alt="new-pic-preview">
+                        <input style="display: none;" id="upload" name="upload" type="file" class="file"  data-show-upload="false" data-show-caption="true">
+                        <button style="display: none; margin-top: 5px;" type="button" class="btn btn-primary btn-cancel-new">Batal</button>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="harga" class="form-label">Harga</label>
+                        <input type="number" class="form-control" id="harga" value="<%= data.harga %>">
+                    </div>
+
+                    <button type="button" class="btn btn-primary w-100" id="btn-update">Update</button>
+
+                </div>
+                <!-- /.container-fluid -->
+
+            </div>
+            <!-- End of Main Content -->
+
+            <!-- Footer -->
+            <%- include('footer.ejs') %>
+            <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="/sbadmin/vendor/jquery/jquery.min.js"></script>
+    <script src="/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="/sbadmin/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="/sbadmin/js/sb-admin-2.min.js"></script>
+
+    <script src="/javascripts/updateProduct.js"></script>
+
+</body>
+
+</html>

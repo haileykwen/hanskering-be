@@ -1,0 +1,11 @@
+#foto_produk, #new-pic-preview{
+    display: block;
+    width: 300px;
+    margin-bottom: 5px;
+}
+
+@media screen and (max-width: 400px){
+    #foto_produk, #new-pic-preview{
+        width: 100%;
+    }
+}
