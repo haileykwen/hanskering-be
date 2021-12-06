@@ -43,3 +43,17 @@ function clickEdit(e){
     var id = target.parentNode.parentNode.id
     window.location.href = `${window.location.origin}/cms/app/product/update?id=${id}`;
 }
+
+function clickHapus(e){
+    e = e || window.event;
+    var target = e.target || e.srcElement;
+    var id = target.parentNode.parentNode.id
+    window.location.href = `${window.location.origin}/cms/app/product/delete?id=${id}`;
+}
+
+function clickRestock(e){
+    e = e || window.event;
+    var target = e.target || e.srcElement;
+    var id = target.parentNode.parentNode.id
+    window.location.href = `${window.location.origin}/cms/app/product/restock?id=${id}`;
+}

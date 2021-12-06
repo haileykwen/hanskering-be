@@ -19,8 +19,7 @@ const get_product = (req, res) => {
         db.query(sqlViewAllProduct, (error, success) => {
             if (error) res.status(500).json({
                 status: 500,
-                message: "Server Error",
-                error
+                message: "Server Error"
             });
             if (success) {
                 pageLength = Math.ceil(success.length/resultsPerPage);
@@ -36,8 +35,7 @@ const get_product = (req, res) => {
                         if (error) {
                             res.status(500).json({
                                 status: 500,
-                                message: "Server Error",
-                                error
+                                message: "Server Error"
                             });
                         } else {
                             res.render('product', {
@@ -60,23 +58,35 @@ const get_product = (req, res) => {
 
 const get_viewProduct = (req, res) => {
     if (req.query.id) {
-        const sql = "SELECT * FROM barang WHERE kode_barang = ?";
-        db.query(sql, req.query.id, (error, success) => {
+        const sqlGet = "SELECT * FROM barang WHERE kode_barang = ?";
+        db.query(sqlGet, req.query.id, (error, success) => {
             if (error) {
                 res.status(500).json({
                     status: 500,
-                    message: "Server Error",
-                    error
+                    message: "Server Error"
                 });
             }
-            if (success) {
-                let data = success[0];
-                data.size = JSON.parse(data.size);
-                res.render('viewProduct', {
-                    data
+            if (success.length > 0) {
+                const sql = "SELECT * FROM barang WHERE kode_barang = ?";
+                db.query(sql, req.query.id, (error, success) => {
+                    if (error) {
+                        res.status(500).json({
+                            status: 500,
+                            message: "Server Error"
+                        });
+                    }
+                    if (success) {
+                        let data = success[0];
+                        data.size = JSON.parse(data.size);
+                        res.render('viewProduct', {
+                            data
+                        });
+                    }
                 });
+            } else {
+                res.redirect('/cms/app/product?page=1');
             }
-        });
+        })
     } else {
         res.redirect('/cms/app/product?page=1');
     }
@@ -84,26 +94,79 @@ const get_viewProduct = (req, res) => {
 
 const get_updateProduct = (req, res) => {
     if (req.query.id) {
-        const sql = "SELECT * FROM barang WHERE kode_barang = ?";
-        db.query(sql, req.query.id, (error, success) => {
+        const sqlGet = "SELECT * FROM barang WHERE kode_barang = ?";
+        db.query(sqlGet, req.query.id, (error, success) => {
             if (error) {
                 res.status(500).json({
                     status: 500,
-                    message: "Server Error",
-                    error
+                    message: "Server Error"
                 });
             }
-            if (success) {
-                let data = success[0];
-                data.size = JSON.parse(data.size);
-                res.render('updateProduct', {
-                    data
+            if (success.length > 0) {
+                const sql = "SELECT * FROM barang WHERE kode_barang = ?";
+                db.query(sql, req.query.id, (error, success) => {
+                    if (error) {
+                        res.status(500).json({
+                            status: 500,
+                            message: "Server Error"
+                        });
+                    }
+                    if (success) {
+                        let data = success[0];
+                        data.size = JSON.parse(data.size);
+                        res.render('updateProduct', {
+                            data
+                        });
+                    }
                 });
+            } else {
+                res.redirect('/cms/app/product?page=1');
             }
-        });
+        })
     } else {
         res.redirect('/cms/app/product?page=1');
     }
+}
+
+const get_deleteProduct = (req, res) => {
+    if (req.query.id) {
+        const sqlGet = "SELECT * FROM barang WHERE kode_barang = ?"
+        db.query(sqlGet, req.query.id, (error, success) => {
+            if (error) {
+                res.status(500).json({
+                    status: 500,
+                    message: "Server Error"
+                });
+            }
+            if (success.length > 0) {
+                const sql = "SELECT * FROM barang WHERE kode_barang = ?";
+                db.query(sql, req.query.id, (error, success) => {
+                    if (error) {
+                        res.status(500).json({
+                            status: 500,
+                            message: "Server Error",
+                            error
+                        });
+                    }
+                    if (success) {
+                        let data = success[0];
+                        data.size = JSON.parse(data.size);
+                        res.render('deleteProduct', {
+                            data
+                        });
+                    }
+                });
+            } else {
+                res.redirect('/cms/app/product?page=1');
+            }
+        })
+    } else {
+        res.redirect('/cms/app/product?page=1');
+    }
+}
+
+const get_restock = (req, res) => {
+    res.render('restock');
 }
 
 module.exports = {
@@ -111,5 +174,7 @@ module.exports = {
     get_product,
     get_createProduct,
     get_viewProduct,
-    get_updateProduct
+    get_updateProduct,
+    get_deleteProduct,
+    get_restock
 }

@@ -51,6 +51,7 @@ uploadPic.addEventListener("change", (event) => {
 });
 
 btnSubmit.addEventListener('click', async () => {
+    btnSubmit.innerHTML = 'Membuat Produk ...';
     const data = new FormData();
     data.append("file", pictures);
     data.append("upload_preset", "kossep");
@@ -89,6 +90,8 @@ btnSubmit.addEventListener('click', async () => {
             .then(result => result.json())
             .then(response => {
                 if (response.status === 200) {
+                    btnSubmit.innerHTML = 'Submit';
+
                     console.log(response);
                     resetForm();
 
@@ -102,8 +105,11 @@ btnSubmit.addEventListener('click', async () => {
                     const message = document.createTextNode("Berhasil menambahkan produk");
                     new_div.appendChild(message);
                     formWrapper.insertBefore(new_div, brandPart);
+
+                    btnSubmit.style.display = 'none';
                     window.scrollTo(0,0);
                 } else {
+                    btnSubmit.innerHTML = 'Submit';
                     console.log(response);
                     
                     const formWrapper = document.getElementById("form-wrapper");
@@ -120,6 +126,7 @@ btnSubmit.addEventListener('click', async () => {
                 }
             })
             .catch(error => {
+                btnSubmit.innerHTML = 'Submit';
                 console.log(error);
                 
                 const formWrapper = document.getElementById("form-wrapper");
