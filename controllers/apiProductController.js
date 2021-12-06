@@ -25,6 +25,39 @@ const post_create = (req, res) => {
     });
 };
 
+const delete_product = (req, res) => {
+    const { currentId } = req.body;
+    const sqlGet = "SELECT * FROM barang WHERE kode_barang = ?"
+    db.query(sqlGet, currentId, (error, success) => {
+        if (error) {
+            res.status(500).json({
+                status: 500,
+                message: "Server Error"
+            });
+        }
+        if (success.length > 0) {
+            const sql = "DELETE FROM barang WHERE kode_barang = ?";
+            db.query(sql, currentId, (error, success) => {
+                if (error) {
+                    res.status(500).json({
+                        status: 500,
+                        message: "Server Error",
+                        error
+                    });
+                }
+                if (success) {
+                    res.status(200).json({
+                        status: 200,
+                        message: "Produk telah dihapus"
+                    });
+                }
+            });
+        } else {
+            res.redirect("/app/cms/product");
+        }
+    });
+}
+
 const put_update = (req, res) => {
     let { nama_barang, brand, harga, foto, kode_barang } = req.body;
 
@@ -125,9 +158,94 @@ const get_product_pagination = (req, res) => {
     });
 }
 
+const put_restock = (req, res) => {
+    let { id, size37, size38, size39, size40, size41, size42, size43 } = req.body;
+    console.log({ id, size37, size38, size39, size40, size41, size42, size43 });
+
+    const sqlGet = "SELECT * FROM barang WHERE kode_barang = ?";
+    db.query(sqlGet, id, (error, success) => {
+        if (error) {
+            res.status(500).json({
+                status: 500,
+                message: "Server Error"
+            });
+        }
+        if (success.length > 0) {
+            let existing = success[0];
+            let oldSizes = JSON.parse(existing.size);
+            let newSizes = {};
+
+            if ( size37 !== '' ) {
+                newSizes['37'] = parseInt(oldSizes['37']) + parseInt(size37);
+            } else {
+                newSizes['37'] = oldSizes['37'];
+            }
+
+            if ( size38 !== '' ) {
+                newSizes['38'] = parseInt(oldSizes['38']) + parseInt(size38);
+            } else {
+                newSizes['38'] = oldSizes['38'];
+            }
+
+            if ( size39 !== '' ) {
+                newSizes['39'] = parseInt(oldSizes['39']) + parseInt(size39);
+            } else {
+                newSizes['39'] = oldSizes['39'];
+            }
+
+            if ( size40 !== '' ) {
+                newSizes['40'] = parseInt(oldSizes['40']) + parseInt(size40);
+            } else {
+                newSizes['40'] = oldSizes['40'];
+            }
+
+            if ( size41 !== '' ) {
+                newSizes['41'] = parseInt(oldSizes['41']) + parseInt(size41);
+            } else {
+                newSizes['41'] = oldSizes['41'];
+            }
+
+            if ( size42 !== '' ) {
+                newSizes['42'] = parseInt(oldSizes['42']) + parseInt(size42);
+            } else {
+                newSizes['42'] = oldSizes['42'];
+            }
+
+            if ( size43 !== '' ) {
+                newSizes['43'] = parseInt(oldSizes['43']) + parseInt(size43);
+            } else {
+                newSizes['43'] = oldSizes['43'];
+            }
+
+            let data = JSON.stringify(newSizes);
+            let sqlUpdate = "UPDATE barang SET size = ? WHERE kode_barang = ?";
+            db.query(sqlUpdate, [data, id], (error, success) => {
+                if (error) {
+                    console.log('Restock Gagal');
+                    res.status(500).json({
+                        status: 500,
+                        message: "Server Error"
+                    });
+                }
+                if (success) {
+                    console.log('Restock Berhasil');
+                    res.status(200).json({
+                        status: 200,
+                        message: "Restock Berhasil"
+                    });
+                }
+            });
+        } else {
+            res.redirect('/cms/app/product?page=1');
+        }
+    });
+}
+
 module.exports = {
     post_create,
     get_all,
     get_product_pagination,
-    put_update
+    put_update,
+    delete_product,
+    put_restock
 }

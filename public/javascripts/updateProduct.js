@@ -125,6 +125,8 @@ btnUpdate.addEventListener('click', async () => {
                     new_div.appendChild(message);
                     formWrapper.insertBefore(new_div, brandPart);
 
+                    btnUpdate.style.display = 'none';
+
                     window.scrollTo(0,0);
                 } else {
                     console.log(response);
