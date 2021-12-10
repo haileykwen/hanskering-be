@@ -1,11 +1,20 @@
 const express                           = require('express');
 const port                              = process.env.PORT || 3001;
 const cookieParser                      = require('cookie-parser');
-const { requireAuth }    = require('./middlewares/cmsAuthMiddleware');
+const cors                              = require('cors');
+const { requireAuth }                   = require('./middlewares/cmsAuthMiddleware');
 
 const app = express();
 
 app.set('view engine', 'ejs');
+
+app.use(cors());
+app.use((req, res, next) => { // Handle error CORS policy
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Method', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    next();
+}) 
 
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
