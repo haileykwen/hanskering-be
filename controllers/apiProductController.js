@@ -120,41 +120,83 @@ const get_all = (req, res) => {
 }
 
 const get_product_pagination = (req, res) => {
-    const limit = 10;
-    const page = req.query.page ? req.query.page : 1;
-    const offset = (page - 1) * limit;
-    const sqlGetProdutWithPagination = "SELECT * FROM barang limit "+limit+" OFFSET "+offset;
-
-    let productLength;
+    const {categoryBrand, page} = req.query;
+    
     let pageLength;
+    let resultsPerPage = 5;
 
-    const sqlViewAllProduct = "SELECT * FROM barang";
-    db.query(sqlViewAllProduct, (error, success) => {
-        if (error) res.status(500).json({
-            status: 500,
-            message: "Server Error",
-            error
-        });
-        if (success) {
-            productLength = success.length;
-            pageLength = Math.ceil(success.length / limit);
+    let sqlCore = {
+        brand: "All Brand",
+        query: "SELECT * FROM barang"
+    };
+
+    switch (categoryBrand) {
+        case "Vans":
+            sqlCore.brand = "Vans";
+            sqlCore.query = "SELECT * FROM barang WHERE brand = ?";
+            break;
+        case "Converse":
+            sqlCore.brand = "Converse";
+            sqlCore.query = "SELECT * FROM barang WHERE brand = ?";
+            break;
+        case "All Brand":
+            sqlCore.brand = "All Brand";
+            sqlCore.query = "SELECT * FROM barang";
+            break;
+        default:
+            sqlCore.brand = "All Brand";
+            sqlCore.query = "SELECT * FROM barang";
+    }
+
+    db.query(sqlCore.query, sqlCore.brand === "All Brand" ? "" : sqlCore.brand, (error, success) => {
+        if (error) {
+            res.status(500).json({
+                status: 500,
+                message: "Server Error",
+                process: "sqlCore"
+            });
         }
-    });
+        if (success) {
+            pageLength = Math.ceil(success.length/resultsPerPage);
 
-    db.query(sqlGetProdutWithPagination, (error, success) => {
-        if (error) res.status(500).json({
-            status: 500,
-            message: "Server Error",
-            error
-        });
-        if (success) res.status(200).json({
-            status: 200,
-            message: "Get all product successful",
-            data: success,
-            current_page: page,
-            all_page_count: pageLength,
-            all_product_count: productLength
-        });
+            const startingLimit = (page - 1) * resultsPerPage;
+
+            let sqlCoreBase;
+            switch (sqlCore.brand) {
+                case "Vans":
+                    sqlCoreBase = `${sqlCore.query} LIMIT ${startingLimit},${resultsPerPage}`
+                    break;
+                case "Converse":
+                    sqlCoreBase = `${sqlCore.query} LIMIT ${startingLimit},${resultsPerPage}`
+                    break;
+                case "All Brand":
+                    sqlCoreBase = `SELECT * FROM barang LIMIT ${startingLimit},${resultsPerPage}`
+                    break;
+                default:
+                    sqlCoreBase = `SELECT * FROM barang LIMIT ${startingLimit},${resultsPerPage}`
+            }
+
+            db.query(sqlCoreBase, sqlCore.brand === "All Brand" ? "" : sqlCore.brand, (error, success)=>{
+                if (error) {
+                    res.status(500).json({
+                        status: 500,
+                        message: "Server Error",
+                        process: "sqlPagination",
+                        query: sqlCoreBase
+                    });
+                } else {
+                    res.status(200).json({
+                        status: 200,
+                        data: success,
+                        categoryBrand: sqlCore.brand,
+                        next: req.query.page < pageLength ? true : false,
+                        page: parseInt(page),
+                        sqlCore,
+                        sqlCoreBase
+                    });
+                }
+            });
+        }
     });
 }
 
@@ -241,11 +283,41 @@ const put_restock = (req, res) => {
     });
 }
 
+const get_product = (req, res) => {
+    const { id } = req.query;
+    console.log({id});
+
+    const sql = "SELECT * FROM barang WHERE kode_barang = ?";
+    db.query(sql, id, (error, success) => {
+        if (error) {
+            res.status(500).json({
+                status: 500,
+                message: "Server Error",
+                process: "Get product base on id"
+            });
+        }
+
+        if (success && success.length > 0) {
+            res.status(200).json({
+                status: 200,
+                message: "Get product success",
+                data: success
+            })
+        } else {
+            res.status(400).json({
+                status: 400,
+                message: `No product with that id = ${id}`
+            });
+        }
+    });
+}
+
 module.exports = {
     post_create,
     get_all,
     get_product_pagination,
     put_update,
     delete_product,
-    put_restock
+    put_restock,
+    get_product
 }

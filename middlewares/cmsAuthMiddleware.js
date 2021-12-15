@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 
 const requireAuth = (req, res, next) => {
-    const token = req.cookies.jwt;
+    let token = req.cookies.jwt;
+    if (!token) token = req.headers.authorization;
 
     if (token) {
         jwt.verify(token, 'skidipapap', (err, decodedToken) => {
