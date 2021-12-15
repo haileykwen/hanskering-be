@@ -29,11 +29,13 @@ const cmsAuthRoute      = require('./routes/cmsAuthRoute');
 const cmsAppRoute       = require('./routes/cmsAppRoute'); 
 const apiProductRoute   = require("./routes/apiProductRoute");
 const apiUserRoute      = require("./routes/apiUserRoute");
+const apiOrderRoute      = require("./routes/apiOrderRoute");
 
 app.use('/cms/auth', cmsAuthRoute);
 app.use('/cms/app', requireAuth, cmsAppRoute);
 app.use('/api/product', requireAuth, apiProductRoute);
 app.use('/api/user', apiUserRoute);
+app.use('/api/order', requireAuth, apiOrderRoute);
 app.get('/*', (req, res) => res.redirect('/cms/app/dashboard'));
 
 app.listen(port, () => {

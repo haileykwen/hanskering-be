@@ -3,7 +3,6 @@ const { v4: uuidv4 } = require("uuid");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const jwt = require("jsonwebtoken");
-const res = require("express/lib/response");
 require('dotenv').config();
 
 const post_signup = (req, res) => {
@@ -325,11 +324,55 @@ const delete_cart = async (req, res) => {
     }
 }
 
+const get_userData = async (req, res) => {
+    const token = req.headers.authorization;
+
+    const getUser = (id_pembeli) => {
+        return new Promise((resolve, reject)=>{
+            db.query('SELECT * FROM pembeli WHERE id_pembeli = ?', id_pembeli,  (error, elements)=>{
+                if(error){
+                    return reject(error);
+                }
+                return resolve(elements);
+            });
+        });
+    };
+
+    if (token) {
+        const decodedToken = jwt.verify(token, 'skidipapap');
+        
+        if (decodedToken && decodedToken.user_id) {
+            const id_pembeli = decodedToken.user_id;
+            let getUserResp = await getUser(id_pembeli);
+            let user = getUserResp[0];
+
+            user.password = null;
+            user.keranjang = JSON.parse(user.keranjang);
+            res.status(200).json({
+                status: 200,
+                message: "You are authorized",
+                data: user
+            });
+        } else {
+            res.status(401).json({
+                status: 401,
+                message: "You are unauthorize, token not valid"
+            });
+        }
+    } else {
+        res.status(401).json({
+            status: 401,
+            message: "You are unauthorize"
+        });
+    }
+}
+
 module.exports = {
     post_signup,
     post_signin,
     get_signout,
     put_cart,
     get_cart,
-    delete_cart
+    delete_cart,
+    get_userData
 }
