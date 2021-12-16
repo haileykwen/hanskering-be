@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require("uuid");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const jwt = require("jsonwebtoken");
+var request = require("request");
 require('dotenv').config();
 
 const post_signup = (req, res) => {
@@ -34,7 +35,7 @@ const post_signup = (req, res) => {
                 const id_pembeli = uuidv4();
                 const hash = bcrypt.hashSync(password, saltRounds);
                 const sqlCreate = "INSERT INTO pembeli (id_pembeli, fullname, email, password) VALUES (?, ?, ?, ?)";
-            
+
                 db.query(sqlCreate, [id_pembeli, fullname, email, hash], (error, success) => {
                     if (error) {
                         res.status(500).json({
@@ -44,7 +45,7 @@ const post_signup = (req, res) => {
                     }
 
                     if (success) {
-                        const token = jwt.sign({user_id: id_pembeli}, process.env.JWT_SECRET);
+                        const token = jwt.sign({ user_id: id_pembeli }, process.env.JWT_SECRET);
                         const maxAge = 3 * 24 * 60 * 60;
                         res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 });
                         res.status(200).json({
@@ -62,7 +63,7 @@ const post_signup = (req, res) => {
 const post_signin = (req, res) => {
     const { email, password } = req.body;
 
-    if ( !email || !password) {
+    if (!email || !password) {
         res.status(400).json({
             status: 400,
             message: "Ooops, data kamu belum lengkap. Lengkapi dulu yuk!"
@@ -91,7 +92,7 @@ const post_signin = (req, res) => {
                 const isMatch = bcrypt.compareSync(password, hash);
 
                 if (isMatch) {
-                    const token = jwt.sign({user_id: data.id_pembeli}, process.env.JWT_SECRET);
+                    const token = jwt.sign({ user_id: data.id_pembeli }, process.env.JWT_SECRET);
                     const maxAge = 3 * 24 * 60 * 60;
                     res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 });
                     res.status(200).json({
@@ -122,7 +123,7 @@ const put_cart = (req, res) => {
     const token = req.headers.authorization;
     const decodedToken = jwt.verify(token, 'skidipapap');
     const { kode_barang, size } = req.body;
-    
+
     if (decodedToken.user_id) {
         id_pembeli = decodedToken.user_id;
 
@@ -205,7 +206,7 @@ const get_cart = (req, res) => {
     const token = req.headers.authorization;
     const decodedToken = jwt.verify(token, 'skidipapap');
     const id_pembeli = decodedToken.user_id;
-    
+
     const sql = "SELECT * FROM pembeli WHERE id_pembeli = ?";
     db.query(sql, id_pembeli, async (error, success) => {
         if (error) {
@@ -217,9 +218,9 @@ const get_cart = (req, res) => {
         }
 
         const getCart = (id) => {
-            return new Promise((resolve, reject)=>{
-                db.query('SELECT * FROM barang WHERE kode_barang = ?', id,  (error, elements)=>{
-                    if(error){
+            return new Promise((resolve, reject) => {
+                db.query('SELECT * FROM barang WHERE kode_barang = ?', id, (error, elements) => {
+                    if (error) {
                         return reject(error);
                     }
                     return resolve(elements);
@@ -265,9 +266,9 @@ const delete_cart = async (req, res) => {
     const { kode_barang } = req.query;
 
     const getUserData = (id) => {
-        return new Promise((resolve, reject)=>{
-            db.query('SELECT * FROM pembeli WHERE id_pembeli = ?', id,  (error, elements)=>{
-                if(error){
+        return new Promise((resolve, reject) => {
+            db.query('SELECT * FROM pembeli WHERE id_pembeli = ?', id, (error, elements) => {
+                if (error) {
                     return reject(error);
                 }
                 return resolve(elements);
@@ -276,9 +277,9 @@ const delete_cart = async (req, res) => {
     };
 
     const updateUserCart = (cart, user_id) => {
-        return new Promise((resolve, reject)=>{
-            db.query('UPDATE pembeli SET keranjang = ? WHERE id_pembeli = ?', [cart, user_id],  (error, elements)=>{
-                if(error){
+        return new Promise((resolve, reject) => {
+            db.query('UPDATE pembeli SET keranjang = ? WHERE id_pembeli = ?', [cart, user_id], (error, elements) => {
+                if (error) {
                     return reject(error);
                 }
                 return resolve(elements);
@@ -286,7 +287,7 @@ const delete_cart = async (req, res) => {
         });
     };
 
-    if ( !kode_barang ) {
+    if (!kode_barang) {
         res.status(400).json({
             status: 400,
             message: "kode_barang were not provided"
@@ -328,9 +329,9 @@ const get_userData = async (req, res) => {
     const token = req.headers.authorization;
 
     const getUser = (id_pembeli) => {
-        return new Promise((resolve, reject)=>{
-            db.query('SELECT * FROM pembeli WHERE id_pembeli = ?', id_pembeli,  (error, elements)=>{
-                if(error){
+        return new Promise((resolve, reject) => {
+            db.query('SELECT * FROM pembeli WHERE id_pembeli = ?', id_pembeli, (error, elements) => {
+                if (error) {
                     return reject(error);
                 }
                 return resolve(elements);
@@ -340,7 +341,7 @@ const get_userData = async (req, res) => {
 
     if (token) {
         const decodedToken = jwt.verify(token, 'skidipapap');
-        
+
         if (decodedToken && decodedToken.user_id) {
             const id_pembeli = decodedToken.user_id;
             let getUserResp = await getUser(id_pembeli);
@@ -367,6 +368,148 @@ const get_userData = async (req, res) => {
     }
 }
 
+const get_province = (req, res) => {
+    var options = {
+        method: 'GET',
+        url: 'https://api.rajaongkir.com/starter/province',
+        qs: {},
+        headers: { key: process.env.RAJAONGKIR_API_KEY }
+    };
+
+    request(options, function (error, response, body) {
+        if (error) throw new Error(error);
+
+        body = JSON.parse(body);
+        res.json(body);
+    });
+}
+
+const get_city = (req, res) => {
+    const { province } = req.query;
+
+    if (province) {
+        var options = {
+            method: 'GET',
+            url: 'https://api.rajaongkir.com/starter/city',
+            qs: {province: province},
+            headers: { key: process.env.RAJAONGKIR_API_KEY }
+        };
+    
+        request(options, function (error, response, body) {
+            if (error) throw new Error(error);
+    
+            body = JSON.parse(body);
+            res.json(body);
+        });
+    } else {
+        var options = {
+            method: 'GET',
+            url: 'https://api.rajaongkir.com/starter/city',
+            qs: {},
+            headers: { key: process.env.RAJAONGKIR_API_KEY }
+        };
+    
+        request(options, function (error, response, body) {
+            if (error) throw new Error(error);
+    
+            body = JSON.parse(body);
+            res.json(body);
+        });
+    }
+}
+
+const put_address = (req, res) => {
+    const token = req.headers.authorization;
+    const { data } = req.body;
+    console.log(data);
+
+    if (data) {
+        if (token) {
+            const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    
+            if (decodedToken && decodedToken.user_id) {
+                const id_pembeli = decodedToken.user_id;
+                const sql = "UPDATE pembeli SET alamat = ? WHERE id_pembeli = ?";
+
+                db.query(sql, [JSON.stringify(data), id_pembeli], (error, success) => {
+                    if (error) {
+                        res.status(500).json({
+                            status: 500,
+                            message: "Server error. Gagal update alamat"
+                        });
+                    } else {
+                        res.status(200).json({
+                            status: 200,
+                            message: "Update alamat berhasil"
+                        });
+                    }
+                });
+            } else {
+                res.status(401).json({
+                    status: 401,
+                    message: "You are unauthorize, token not valid"
+                });
+            }
+        } else {
+            res.status(401).json({
+                status: 401,
+                message: "You are unauthorize"
+            });
+        }
+    } else {
+        res.status(400).json({
+            status: 400,
+            message: "Alamat tidak boleh kosong"
+        });
+    }
+}
+
+const put_telepon = (req, res) => {
+    const token = req.headers.authorization;
+    const { data } = req.body;
+    console.log(data);
+
+    if (data) {
+        if (token) {
+            const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    
+            if (decodedToken && decodedToken.user_id) {
+                const id_pembeli = decodedToken.user_id;
+                const sql = "UPDATE pembeli SET telepon = ? WHERE id_pembeli = ?";
+
+                db.query(sql, [data, id_pembeli], (error, success) => {
+                    if (error) {
+                        res.status(500).json({
+                            status: 500,
+                            message: "Server error. Gagal update No. Telepon"
+                        });
+                    } else {
+                        res.status(200).json({
+                            status: 200,
+                            message: "Update No. Telepon berhasil"
+                        });
+                    }
+                });
+            } else {
+                res.status(401).json({
+                    status: 401,
+                    message: "You are unauthorize, token not valid"
+                });
+            }
+        } else {
+            res.status(401).json({
+                status: 401,
+                message: "You are unauthorize"
+            });
+        }
+    } else {
+        res.status(400).json({
+            status: 400,
+            message: "No. Telepon tidak boleh kosong"
+        });
+    }
+}
+
 module.exports = {
     post_signup,
     post_signin,
@@ -374,5 +517,9 @@ module.exports = {
     put_cart,
     get_cart,
     delete_cart,
-    get_userData
+    get_userData,
+    get_province,
+    get_city,
+    put_address,
+    put_telepon
 }
