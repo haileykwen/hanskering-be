@@ -218,7 +218,81 @@ const post_order = async (req, res) => {
     }
 }
 
+const get_userOrder = async (req, res) => {
+    let token           = req.headers.authorization;
+
+    const get_userOrder = (id_pembeli) => {
+        return new Promise((resolve, reject) => {
+            db.query('SELECT * FROM pesanan WHERE id_pembeli = ?', id_pembeli, (error, elements) => {
+                if (error) {
+                    return reject(error);
+                }
+                return resolve(elements);
+            });
+        });
+    };
+
+    if (token) {
+        let decodedToken    = jwt.verify(token, process.env.JWT_SECRET);
+        
+        if (decodedToken) {
+            let id_pembeli = decodedToken.user_id;
+            let orders = await get_userOrder(id_pembeli);
+            if (orders && orders.length > 0) {
+                res.status(200).json({
+                    status: 200,
+                    data: orders
+                });
+            } else {
+                res.status(400).json({
+                    status: 400,
+                    message: "Kamu belum punya pesanan"
+                });
+            }
+        } else {
+            res.status(401).json({
+                status: 401,
+                message: 'Kamu tidak ter autorisasi'
+            });
+        }
+
+    } else {
+        res.status(401).json({
+            status: 401,
+            message: 'Kamu tidak ter autorisasi'
+        });
+    }
+}
+
+const get_order = (req, res) => {
+    const { id_pesanan } = req.query;
+    const sql = 'SELECT * FROM pesanan WHERE id_pesanan = ?';
+    db.query(sql, id_pesanan, (error, success) => {
+        if (error) {
+            res.status(500).json({
+                status: 500,
+                message: 'Server Error',
+                prcess: 'Get pesanan'
+            });
+        }
+
+        if (success) {
+            let data = success[0];
+            data.destination = JSON.parse(data.destination);
+            data.items = JSON.parse(data.items);
+            data.kurir = JSON.parse(data.kurir);
+            data.items = data.items.items;
+            res.status(200).json({
+                status: 200,
+                data: data
+            });
+        }
+    });
+}
+
 module.exports = {
     get_ongkir,
-    post_order
+    post_order,
+    get_userOrder,
+    get_order
 }
