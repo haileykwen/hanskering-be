@@ -120,7 +120,7 @@ const get_all = (req, res) => {
 }
 
 const get_product_pagination = (req, res) => {
-    const {categoryBrand, page} = req.query;
+    const {categoryBrand, page, query} = req.query;
     
     let pageLength;
     let resultsPerPage = 10;
@@ -148,12 +148,54 @@ const get_product_pagination = (req, res) => {
             sqlCore.query = "SELECT * FROM barang";
     }
 
-    db.query(sqlCore.query, sqlCore.brand === "All Brand" ? "" : sqlCore.brand, (error, success) => {
+    if (query) {
+        if (sqlCore.brand === "All Brand") {
+            sqlCore.query = sqlCore.query + " WHERE nama_barang LIKE ?";
+        } else {
+            sqlCore.query = sqlCore.query + " AND nama_barang LIKE ?";
+        }
+    }
+
+    let sqlCoreValues;
+
+    if (query) {
+        switch (sqlCore.brand) {
+            case "Vans":
+                sqlCoreValues = ["Vans", '%' + query + '%']
+                break;
+            case "Converse":
+                sqlCoreValues = ["Converse", '%' + query + '%']
+                break;
+            case "All Brand":
+                sqlCoreValues = '%' + query + '%'
+                break;
+            default:
+                sqlCoreValues = '%' + query + '%'
+        }
+    } else {
+        switch (sqlCore.brand) {
+            case "Vans":
+                sqlCoreValues = "Vans"
+                break;
+            case "Converse":
+                sqlCoreValues = "Converse"
+                break;
+            case "All Brand":
+                sqlCoreValues = "All Brand"
+                break;
+            default:
+                sqlCoreValues = "All Brand"
+        }
+    }
+
+    db.query(sqlCore.query, sqlCoreValues, (error, success) => {
         if (error) {
             res.status(500).json({
                 status: 500,
                 message: "Server Error",
-                process: "sqlCore"
+                process: "sqlCore",
+                query: sqlCore.query,
+                values: sqlCoreValues
             });
         }
         if (success) {
@@ -170,13 +212,13 @@ const get_product_pagination = (req, res) => {
                     sqlCoreBase = `${sqlCore.query} LIMIT ${startingLimit},${resultsPerPage}`
                     break;
                 case "All Brand":
-                    sqlCoreBase = `SELECT * FROM barang LIMIT ${startingLimit},${resultsPerPage}`
+                    sqlCoreBase = `${sqlCore.query} LIMIT ${startingLimit},${resultsPerPage}`
                     break;
                 default:
                     sqlCoreBase = `SELECT * FROM barang LIMIT ${startingLimit},${resultsPerPage}`
             }
 
-            db.query(sqlCoreBase, sqlCore.brand === "All Brand" ? "" : sqlCore.brand, (error, success)=>{
+            db.query(sqlCoreBase, sqlCoreValues, (error, success)=>{
                 if (error) {
                     res.status(500).json({
                         status: 500,
@@ -191,6 +233,7 @@ const get_product_pagination = (req, res) => {
                         categoryBrand: sqlCore.brand,
                         next: req.query.page < pageLength ? true : false,
                         page: parseInt(page),
+                        query: req.query.query,
                         sqlCore,
                         sqlCoreBase
                     });
