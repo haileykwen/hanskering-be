@@ -123,7 +123,7 @@ const get_product_pagination = (req, res) => {
     const {categoryBrand, page} = req.query;
     
     let pageLength;
-    let resultsPerPage = 5;
+    let resultsPerPage = 10;
 
     let sqlCore = {
         brand: "All Brand",
