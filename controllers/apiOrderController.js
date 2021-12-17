@@ -33,8 +33,7 @@ const get_ongkir = (req, res) => {
 
 const post_order = async (req, res) => {
     let token           = req.headers.authorization;
-    let decodedToken    = jwt.verify(token, process.env.JWT_SECRET);
-    let id_pembeli      = decodedToken.user_id;
+    let { amount, paymentMethod, paymentChannel, items, kurir } = req.body;
 
     const getUser = (id_pembeli) => {
         return new Promise((resolve, reject) => {
@@ -47,29 +46,7 @@ const post_order = async (req, res) => {
         });
     };
 
-    let getUserResp = await getUser(id_pembeli);
-    let user = getUserResp[0];
-
-    var apikey          = process.env.IPAYMU_API_KEY;
-    var va              = process.env.IPAYMU_VA;
-    var url             = 'https://sandbox.ipaymu.com/api/v2/payment/direct';
-
-    var body            = {
-        "name": user.fullname,
-        "email": user.email,
-        "phone":"081223456789",
-        "amount":"5000",
-        "notifyUrl": process.env.IPAYMU_NOTIFY_URL,
-        "paymentMethod":"va",
-        "paymentChannel":"bni",
-    };
-
-    var bodyEncrypt     = CryptoJS.SHA256(JSON.stringify(body));
-    var stringtosign    = "POST:"+va+":"+bodyEncrypt+":"+apikey;
-    var signature       = CryptoJS.enc.Hex.stringify(CryptoJS.HmacSHA256(stringtosign, apikey));
-    
-
-    const request_order = () => {
+    const request_order = (va, signature, body) => {
         return new Promise((resolve, reject) => {
             fetch(
                 url,
@@ -94,10 +71,11 @@ const post_order = async (req, res) => {
     };
 
     const insert_order = (data) => {
-        const { id_pesanan, id_pembeli, via, channel, expired, total, destination, kurir, status } = data;
+        const { id_pesanan, id_pembeli, items, via, channel, payment_number, expired, total, destination, kurir, status } = data;
 
         return new Promise((resolve, reject) => {
-            db.query('INSERT INTO pesanan (id_pesanan, id_pembeli, via, channel, expired, total, destination, kurir, status)', [id_pesanan, id_pembeli, via, channel, expired, total, destination, kurir, status], (error, elements) => {
+            const sql = 'INSERT INTO pesanan (id_pesanan, id_pembeli, items, via, channel, payment_number, expired, total, destination, kurir, status) VALUES(? ,? ,?, ? ,? , ?, ? ,? ,? ,? ,?)'
+            db.query(sql, [id_pesanan, id_pembeli, items, via, channel, payment_number, expired, total, destination, kurir, status], (error, elements) => {
                 if (error) {
                     return reject(error);
                 }
@@ -117,38 +95,126 @@ const post_order = async (req, res) => {
         });
     };
 
-    let requestOrder = await request_order();
-    if (requestOrder.Status === 200) {
-        const data = {
-            id_pesanan: requestOrder.TransactionId,
-            id_pembeli,
-            via: requestOrder.Via,
-            channel: requestOrder.Channel,
-            expired: requestOrder.Expired,
-            total: requestOrder.Total,
-            destination: JSON.stringify(destination),
-            kurir: JSON.stringify(kurir),
-            status: "pending"
-        }
+    const updateUserCart = (cart, user_id) => {
+        return new Promise((resolve, reject) => {
+            db.query('UPDATE pembeli SET keranjang = ? WHERE id_pembeli = ?', [cart, user_id], (error, elements) => {
+                if (error) {
+                    return reject(error);
+                }
+                return resolve(elements);
+            });
+        });
+    };
+
+    if (!token) {
+        res.status(401).json({
+            status: 401,
+            message: 'Kamu tidak ter autorisasi'
+        });
+    }
+
+    if (!amount || !paymentMethod || !paymentChannel || !items || !kurir) {
+        res.status(400).json({
+            status: 400,
+            message: 'Data tidak lengkap'
+        });
+    }
+
+    if (token && amount && paymentMethod && paymentChannel && items && kurir) {
+        let decodedToken    = jwt.verify(token, process.env.JWT_SECRET);
         
-        const insertOrderResp = await insert_order(data);
-        if (insertOrderResp) {
-            let getOrderResp = await get_order(data.id_pesanan);
-            if (getOrderResp) {
-                let order = getOrderResp[0];
-                res.status(200).json({
-                    status: 200,
-                    message: "Pesanan kamu berhasil dibuat",
-                    data: order
+        if (decodedToken) {
+            let id_pembeli      = decodedToken.user_id;
+            items = JSON.stringify(items);
+            kurir = JSON.stringify(kurir);
+
+            let getUserResp = await getUser(id_pembeli);
+            let user = getUserResp[0];
+
+            var apikey          = process.env.IPAYMU_API_KEY;
+            var va              = process.env.IPAYMU_VA;
+            var url             = 'https://sandbox.ipaymu.com/api/v2/payment/direct';
+
+            var body            = {
+                "name": user.fullname,
+                "email": user.email,
+                "phone": user.telepon,
+                "amount": amount,
+                "notifyUrl": process.env.IPAYMU_NOTIFY_URL,
+                "paymentMethod": paymentMethod,
+                "paymentChannel": paymentChannel,
+            };
+
+            var bodyEncrypt     = CryptoJS.SHA256(JSON.stringify(body));
+            var stringtosign    = "POST:"+va+":"+bodyEncrypt+":"+apikey;
+            var signature       = CryptoJS.enc.Hex.stringify(CryptoJS.HmacSHA256(stringtosign, apikey));
+
+            let requestOrder = await request_order(va, signature, body);
+            if (requestOrder.Status === 200) {
+                const data = {
+                    id_pesanan: requestOrder.Data.TransactionId,
+                    id_pembeli,
+                    items,
+                    via: requestOrder.Data.Via,
+                    channel: requestOrder.Data.Channel,
+                    payment_number: requestOrder.Data.PaymentNo,
+                    expired: requestOrder.Data.Expired,
+                    total: amount,
+                    destination: user.alamat,
+                    kurir,
+                    status: "pending"
+                }
+                
+                const insertOrderResp = await insert_order(data);
+                if (insertOrderResp) {
+                    let getOrderResp = await get_order(data.id_pesanan);
+
+                    if (getOrderResp) {
+                        let cart = JSON.parse(user.keranjang);
+                        items = JSON.parse(items);
+                        let barang = items.items;
+
+                        let ids = [];
+                        barang.map(item => {
+                            return ids.push(item.kode_barang);
+                        });
+
+                        ids.map(id => {
+                            let targetDelete = cart.findIndex(x => x.kode_barang === id);
+                            if (targetDelete > -1 && targetDelete <= cart.length) {
+                                cart.splice(targetDelete, 1);
+                            }
+                        });
+
+                        await updateUserCart(JSON.stringify(cart), id_pembeli);
+                    }
+
+                    if (getOrderResp) {
+                        let order = getOrderResp[0];
+                        order.destination = JSON.parse(order.destination);
+                        order.kurir = JSON.parse(order.kurir);
+                        order.items = JSON.parse(order.items);
+
+                        res.status(200).json({
+                            status: 200,
+                            message: "Pesanan kamu berhasil dibuat",
+                            data: order
+                        });
+                    }
+                }
+            } else {
+                res.status(500).json({
+                    status: 500,
+                    message: "Mohon maaf, server sedang tidak bisa melakukan proses order saat ini. Silahkan coba lagi nanti",
+                    process: "POST data ke ipaymu"
                 });
             }
+        } else {
+            res.status(401).json({
+                status: 401,
+                message: 'Kamu tidak ter autorisasi'
+            });
         }
-    } else {
-        res.status(500).json({
-            status: 500,
-            message: "Mohon maaf, server sedang tidak bisa melakukan proses order saat ini. Silahkan coba lagi nanti",
-            process: "POST data ke ipaymu"
-        });
     }
 }
 
