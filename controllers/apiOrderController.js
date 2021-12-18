@@ -294,7 +294,7 @@ const get_order = (req, res) => {
 const notify = (req, res) => {
     const { trx_id, sid, status, via } = req.body;
     if (status === 'berhasil') {
-        const paid_on = moment().format('DD-MM-YYYY hh:mm:ss');
+        const paid_on = moment().utcOffset(420).format('DD-MM-YYYY hh:mm:ss');
         const sql = "UPDATE pesanan SET paid_on = ?, status = ? WHERE id_pesanan = ?";
         db.query(sql, [paid_on, "success", trx_id], (error, success) => {
             if (error) {
