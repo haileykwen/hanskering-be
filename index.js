@@ -2,11 +2,16 @@ const express                           = require('express');
 const port                              = process.env.PORT || 3001;
 const cookieParser                      = require('cookie-parser');
 const cors                              = require('cors');
+const multer                            = require('multer');
+const upload                            = multer();
 const { requireAuth }                   = require('./middlewares/cmsAuthMiddleware');
 
 const app = express();
 
 app.set('view engine', 'ejs');
+
+// for parsing multipart/form-data
+app.use(upload.array());
 
 app.use(cors());
 app.use((req, res, next) => { // Handle error CORS policy
