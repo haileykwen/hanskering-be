@@ -291,7 +291,10 @@ const get_order = (req, res) => {
 }
 
 const notify = (req, res) => {
-    console.log(req.body);
+    const { trx_id, sid, status, via } = req.body;
+    console.log(trx_id, sid, status, via);
+    console.log('url notify hitted');
+    res.json({trx_id, sid, status, via});
 }
 
 module.exports = {
