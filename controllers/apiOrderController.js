@@ -290,9 +290,14 @@ const get_order = (req, res) => {
     });
 }
 
+const notify = (req, res) => {
+    console.log(req.body);
+}
+
 module.exports = {
     get_ongkir,
     post_order,
     get_userOrder,
-    get_order
+    get_order,
+    notify
 }
