@@ -3,6 +3,7 @@ var CryptoJS        = require("crypto-js");
 var fetch           = require('node-fetch');
 var db              = require("../models/db");
 var jwt             = require("jsonwebtoken");
+var moment          = require('moment');
 require('dotenv').config();
 
 const get_ongkir = (req, res) => {
@@ -292,9 +293,26 @@ const get_order = (req, res) => {
 
 const notify = (req, res) => {
     const { trx_id, sid, status, via } = req.body;
-    console.log(trx_id, sid, status, via);
-    console.log('url notify hitted');
-    res.json({trx_id, sid, status, via});
+    if (status === 'berhasil') {
+        const paid_on = moment().format('DD-MM-YYYY hh:mm:ss');
+        const sql = "UPDATE pesanan SET paid_on = ? AND status = ? WHERE id_pesanan = ?";
+        db.query(sql, [paid_on, "success", trx_id], (error, success) => {
+            if (error) {
+                res.status(500).json({
+                    status: 500,
+                    message: "Server error. Cannot update pesanan right now"
+                });
+            }
+
+            if (success) {
+                res.status(200).json({
+                    status: 200,
+                    message: `Pembayaran untuk pesanan ${trx_id} berhasil`,
+                    data: { trx_id, sid, status, via }
+                });
+            }
+        });
+    }
 }
 
 module.exports = {
